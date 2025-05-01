@@ -1,1 +1,1 @@
-# ch8_SDL2CS
+# Chip 8 Interpreter written in C#.
