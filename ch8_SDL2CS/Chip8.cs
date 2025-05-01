@@ -24,20 +24,18 @@ namespace ch8_SDL2CS
 
         const int KEYS_SIZE = 16;
 
-
         //16 bit opcodes, index pointer, and program counter
-        ushort opcode;
-        ushort I;
-        ushort pc;
+        public ushort opcode { private set; get; }
+        public ushort I { private set; get; }
+        public ushort pc { private set; get; }
 
         //stack for memory addresses (minimum 12, 16 recommended) and a stack pointer
         Stack<ushort> stack;
-        byte sp;
 
         //4KB of memory
         byte[] memory;
         //16, 8 bit registers
-        byte[] registers;
+        public byte[] registers { private set; get; }
 
         public byte[] keys;
 
@@ -45,8 +43,8 @@ namespace ch8_SDL2CS
         public byte[,] display { get; private set; }
 
         //8 bit delay and sound timer 
-        public byte soundTimer;
-        byte delayTimer;
+        public byte soundTimer { private set; get; }
+        public byte delayTimer { private set; get; }
         public bool beep;
 
         System.Timers.Timer clock60Hz;
@@ -97,7 +95,7 @@ namespace ch8_SDL2CS
             clock60Hz.Start();
             clock60Hz.Elapsed += Clock60Hz_Elapsed;
 
-            debugInfo = new System.Timers.Timer(1000);
+            debugInfo = new System.Timers.Timer(400);
             debugInfo.Start();
             debugInfo.Elapsed += DebugInfo_Elapsed;
         }
@@ -679,8 +677,7 @@ namespace ch8_SDL2CS
             Console.WriteLine("== CHIP-8 Debug Info ==\n");
             Console.BackgroundColor = ConsoleColor.Black;
             Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine($"PC: 0x{pc:X3}");
-            Console.WriteLine($"I:  0x{I:X3}\n");
+            Console.WriteLine($"PC: 0x{pc:X3}\nI:  0x{I:X3}\n");
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("== Registers ==");
 
@@ -688,9 +685,7 @@ namespace ch8_SDL2CS
                 Console.WriteLine($"V{i:X}: {registers[i]:X2}");
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\n== Timers ==");
-            Console.WriteLine($"Delay Timer: {delayTimer}");
-            Console.WriteLine($"Sound Timer: {soundTimer}");
+            Console.WriteLine($"\n== Timers ==\nDelay Timer: {delayTimer}\nSound Timer: {soundTimer}");
 
             Console.ForegroundColor = ConsoleColor.White;
         }
