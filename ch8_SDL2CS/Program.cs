@@ -219,7 +219,7 @@ namespace ch8_SDL2CS
                 SDL_WINDOWPOS_UNDEFINED,
                 SDL_WINDOWPOS_UNDEFINED,
                 (VIDEO_WIDTH * VIDEO_SCALE), VIDEO_HEIGHT * VIDEO_SCALE,
-                SDL_WindowFlags.SDL_WINDOW_SHOWN
+                SDL_WindowFlags.SDL_WINDOW_SHOWN | SDL_WindowFlags.SDL_WINDOW_BORDERLESS
                 );
             
             if(SDL_window == IntPtr.Zero)
