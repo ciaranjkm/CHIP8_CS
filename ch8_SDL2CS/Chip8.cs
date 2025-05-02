@@ -580,15 +580,29 @@ namespace ch8_SDL2CS
         //Wait for key press, store key pressed in Vx
         private void op_FX0A(byte X)
         {
-            for(int i = 0; i < keys.Length; i++)
+            pc -= 2;
+
+            int count = 0;
+
+            bool waitedForKeyPress = false;
+
+            foreach (byte key in keys)
             {
-                if (keys[i] == 1)
+                if(key != 1)
                 {
-                    registers[X] = (byte)i;
+                    count++;
+                }
+                else
+                {
+                    waitedForKeyPress = true;
+                    pc += 2;
+                }
+
+                if(waitedForKeyPress == true)
+                {
+                    registers[X] = (byte)count;
                 }
             }
-
-            pc -= 2;
         }
 
         //Set the value of the delay timer
