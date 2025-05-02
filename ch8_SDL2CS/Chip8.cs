@@ -13,7 +13,6 @@ namespace ch8_SDL2CS
         public bool drawDisplay = false;
 
         //Constants for memory addresses and sizes of arrays
-
         const int MEMORY_SIZE = 4096;
         const int REGISTERS_SIZE = 16;
         const int STACK_SIZE = 16;
@@ -21,7 +20,6 @@ namespace ch8_SDL2CS
         const int FONT_START = 0x50;
         const int DISPLAY_HEIGHT = 32;
         const int DISPLAY_WIDTH = 64;
-
         const int KEYS_SIZE = 16;
 
         //16 bit opcodes, index pointer, and program counter
@@ -71,11 +69,6 @@ namespace ch8_SDL2CS
 	        0xF0, 0x80, 0xF0, 0x80, 0x80  // F
         };
 
-        public Chip8()
-        {
-            
-        }
-
         public void initialise(byte[] program)
         {
             //starting memory location
@@ -88,13 +81,16 @@ namespace ch8_SDL2CS
             display = new byte[DISPLAY_WIDTH, DISPLAY_HEIGHT];
             keys = new byte[KEYS_SIZE];
 
+            //load the ROM into memory and the default fontset
             loadFontIntoMemory(fontset);
             loadProgramIntoMemory(program);
 
+            //start the 60hz timer
             clock60Hz = new System.Timers.Timer(1000 / 60);
             clock60Hz.Start();
             clock60Hz.Elapsed += Clock60Hz_Elapsed;
 
+            //start the timer for debug info to be refreshed in the console
             debugInfo = new System.Timers.Timer(400);
             debugInfo.Start();
             debugInfo.Elapsed += DebugInfo_Elapsed;
@@ -106,6 +102,7 @@ namespace ch8_SDL2CS
             debugInfo.Stop();
         }
 
+        //events for the timers, fire when interval has elapsed
         private void DebugInfo_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
             displayDebugInfoInConsole();
@@ -132,11 +129,14 @@ namespace ch8_SDL2CS
             }
         }
 
+        //one step of the cpu cycle [fetch, decode, execute]
         public void step()
         {
+            //fetch
             opcode = (ushort)((memory[pc] << 8) | memory[pc + 1]);
             pc += 2;
 
+            //decode
             byte identifier = (byte)(opcode >> 12);
             byte X = (byte)((opcode >> 8) & 0x0f);
             byte Y = (byte)((opcode & 0x00f0) >> 4);
@@ -145,6 +145,7 @@ namespace ch8_SDL2CS
             byte NN = (byte)(opcode & 0x00ff);
             ushort NNN = (ushort)(opcode & 0x0fff);
 
+            //execute
             executeOpcode(identifier, X, Y, N, NN, NNN);
         }
 
@@ -688,22 +689,6 @@ namespace ch8_SDL2CS
             Console.WriteLine($"\n== Timers ==\nDelay Timer: {delayTimer}\nSound Timer: {soundTimer}");
 
             Console.ForegroundColor = ConsoleColor.White;
-        }
-
-        public void displayMemoryInConsole()
-        {
-            int count = 0;
-            foreach(byte b in memory)
-            {
-                Console.Write($"{b:X2} ");
-                count++;
-
-                if(count == 16)
-                {
-                    Console.Write("\n");
-                    count = 0;
-                }
-            }
         }
 
         void debugMessage(string message, ConsoleColor colour)

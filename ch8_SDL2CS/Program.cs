@@ -35,6 +35,7 @@ namespace ch8_SDL2CS
         //VIDEO :: DEBUG WINDOW + CONTROLS WINDOW
         const int SETTINGS_WIDTH = VIDEO_WIDTH / 3;
         const int SETTINGS_BUFFER = 10;
+
         static bool debugWindowShown;
         static bool controlsWindowShown;
 
@@ -49,6 +50,7 @@ namespace ch8_SDL2CS
 
         static void Main(string[] args)
         {
+            //run the emulator
             emulator();
         }
 
@@ -195,8 +197,11 @@ namespace ch8_SDL2CS
 
         static private void NAudio_setup()
         {
+            //create a new waveoutevent and read the beep.wav into the audiofilereader
             waveOut = new WaveOutEvent();
             audioFile = new AudioFileReader("Sound\\beep.wav");
+
+            //initialise the waveoutevent
             waveOut.Init(audioFile);
         }
 
@@ -208,12 +213,15 @@ namespace ch8_SDL2CS
 
         static private bool SDL_setup()
         {
+
+            //initialise SDL
             if (SDL_Init(SDL_INIT_VIDEO) < 0)
             {
                 debugMessage($"Unable to initialise  {SDL_GetError()}", ConsoleColor.Red);
                 return false;
             }
 
+            //create and initialise SDL_window
             SDL_window = SDL_CreateWindow(
                 "Chip 8 Emulator",
                 SDL_WINDOWPOS_UNDEFINED,
@@ -228,6 +236,7 @@ namespace ch8_SDL2CS
                 return false;
             }
 
+            //create and initialise SDL_renderer
             SDL_renderer = SDL_CreateRenderer(
                 SDL_window,
                 -1,
@@ -240,6 +249,7 @@ namespace ch8_SDL2CS
                 return false;
             }
 
+            //create and initialise SDL_texture
             SDL_texture = SDL_CreateTexture(
                 SDL_renderer,
                 SDL.SDL_PIXELFORMAT_ABGR8888,
@@ -254,6 +264,7 @@ namespace ch8_SDL2CS
                 return false;
             }
 
+            //create and intitiate SDL_ttf and load it with the font
             if (SDL_ttf.TTF_Init() < 0)
             {
                 debugMessage($"Unable to create SDL ttf. {SDL_GetError()}", ConsoleColor.Red);
@@ -281,11 +292,13 @@ namespace ch8_SDL2CS
                         break;
 
                     case SDL_EventType.SDL_KEYDOWN:
+                        //on escape down exit the window
                         if(e.key.keysym.sym == SDL_Keycode.SDLK_ESCAPE)
                         {
                             SDL_running = false;
                             break;
                         }
+                        //on l down toggle the debug extension
                         else if (e.key.keysym.sym == SDL_Keycode.SDLK_l)
                         {
                             if(controlsWindowShown != true)
@@ -294,6 +307,7 @@ namespace ch8_SDL2CS
                                 break;
                             }
                         }
+                        //on m down toggle controls extension
                         else if(e.key.keysym.sym == SDL_Keycode.SDLK_m)
                         {
                             if(debugWindowShown != true)
@@ -303,7 +317,8 @@ namespace ch8_SDL2CS
                             }
                         }
 
-                            byte keyDown = getKeyPressed(e.key.keysym.sym);
+                        //check if key pressed is a chip8 key
+                        byte keyDown = getKeyPressed(e.key.keysym.sym);
                         if(keyDown != 17)
                         {
                             chip8.keys[keyDown] = 1;
@@ -332,17 +347,22 @@ namespace ch8_SDL2CS
 
         static private void SDL_updateGameTexture()
         {
+            //read the display into a variable
             byte[,] display = chip8.display;
 
             int index = 0;
 
+            //create a new pixelbuffer for the game texture
             int[] pixelBuffer = new int[64 * 32];
 
+            //loop through all bits in the display
             for (int y = 0; y < display.GetLength(1); y++)
             {
                 for (int x = 0; x < display.GetLength(0); x++)
                 {
+                    //get the pixel 
                     byte pixel = display[x, y];
+                    //set pixel buffer to black or white if pixel is 1 or 0
                     pixelBuffer[y * 64 + x] = pixel == 1 ? unchecked((int)0xFFFFFFFF) : unchecked((int)0xFF000000);
                 }
             }
@@ -350,15 +370,18 @@ namespace ch8_SDL2CS
             IntPtr pixels;
             int pitch;
 
+            //copy texture to render on screen
             SDL_LockTexture(SDL_texture, IntPtr.Zero, out pixels, out pitch);
             Marshal.Copy(pixelBuffer, 0, pixels, pixelBuffer.Length);
             SDL_UnlockTexture(SDL_texture);
 
+            //toggle drawDisplay
             chip8.drawDisplay = false;
         }
 
         static private bool SDL_extendWindow(bool extensionType)
         {
+            //if the window is not extended
             if (extensionType != true)
             {
                 //toggle to render the debug window in emulate loop
@@ -399,6 +422,7 @@ namespace ch8_SDL2CS
 
         static private bool SDL_renderText(string text, int x, int y, SDL_Color colour)
         {
+            //create a new surface of text
             IntPtr textSurface = SDL_ttf.TTF_RenderText_Solid(font, text, colour);
             if(textSurface == IntPtr.Zero)
             {
@@ -406,9 +430,11 @@ namespace ch8_SDL2CS
                 return false;
             }
 
+            //create a texture from the surface
             IntPtr textTexture = SDL_CreateTextureFromSurface(SDL_renderer, textSurface);
             SDL_FreeSurface(textSurface);
 
+            //get dimension of text to make a rect
             SDL_QueryTexture(textTexture, out _, out _, out int tW, out int tH);
             SDL_Rect textRect = new SDL.SDL_Rect()
             {
@@ -418,41 +444,13 @@ namespace ch8_SDL2CS
                 h = tH
             };
 
+            //copy texture to window at the textRect location
             SDL_RenderCopy(SDL_renderer, textTexture, IntPtr.Zero, ref textRect);
 
+            //destroy the texture
             SDL_DestroyTexture(textTexture);
 
             return true;
-        }
-
-        static private void SDL_drawDebugWindowText()
-        {
-            int startX = (VIDEO_WIDTH * VIDEO_SCALE) + (SETTINGS_BUFFER * 2);
-            int startY = 0;
-
-            int lineHeight = 30;
-
-            SDL_renderText("DEBUG INFO", startX, startY, rgbaToSDLColour(255, 0, 0, 255));
-            startY += lineHeight;
-
-            SDL_renderText($"PC :: 0x{chip8.pc:X4}", startX, startY, rgbaToSDLColour(60, 200, 60, 255));
-            startY += lineHeight;
-
-            SDL_renderText($"I :: 0x{chip8.I:X4}", startX, startY, rgbaToSDLColour(60, 200, 60, 255));
-            startY += lineHeight;
-
-            SDL_renderText($"DT :: 0x{chip8.delayTimer:X2}", startX, startY, rgbaToSDLColour(240, 60, 60, 255));
-            startY += lineHeight;
-
-            SDL_renderText($"ST :: 0x{chip8.soundTimer:X2}", startX, startY, rgbaToSDLColour(240, 60, 60, 255));
-            startY += lineHeight;
-
-            SDL_SetRenderDrawColor(SDL_renderer, 60, 60, 255, 0);
-            for (int i = 0; i < chip8.registers.Length; i++)
-            {
-                SDL_renderText($"V{i:X1} :: {chip8.registers[i]:X2}", startX, startY, rgbaToSDLColour(60, 255, 60, 255));
-                startY += lineHeight;
-            }
         }
 
         static private SDL_Color rgbaToSDLColour(int r, int g, int b, int a)
@@ -463,11 +461,6 @@ namespace ch8_SDL2CS
         #endregion
 
         #region helper functions
-
-        private static void setupTimers()
-        {
-
-        }
 
         private static byte getKeyPressed(SDL_Keycode keyPressed)
         {
@@ -547,7 +540,7 @@ namespace ch8_SDL2CS
 
         #region debug functions
 
-        static void debugMessage(string message, ConsoleColor colour)
+        static private void debugMessage(string message, ConsoleColor colour)
         {
             ConsoleColor previousColour = Console.ForegroundColor;
 
@@ -557,20 +550,36 @@ namespace ch8_SDL2CS
             Console.ForegroundColor = previousColour;
         }
 
-        static void writeDisplayToConsole()
+        static private void SDL_drawDebugWindowText()
         {
-            for (int i = 0; i < chip8.display.GetLength(0); i++)
+            int startX = (VIDEO_WIDTH * VIDEO_SCALE) + (SETTINGS_BUFFER * 2);
+            int startY = 0;
+
+            int lineHeight = 30;
+
+            SDL_renderText("DEBUG INFO", startX, startY, rgbaToSDLColour(255, 0, 0, 255));
+            startY += lineHeight;
+
+            SDL_renderText($"PC :: 0x{chip8.pc:X4}", startX, startY, rgbaToSDLColour(60, 200, 60, 255));
+            startY += lineHeight;
+
+            SDL_renderText($"I :: 0x{chip8.I:X4}", startX, startY, rgbaToSDLColour(60, 200, 60, 255));
+            startY += lineHeight;
+
+            SDL_renderText($"DT :: 0x{chip8.delayTimer:X2}", startX, startY, rgbaToSDLColour(240, 60, 60, 255));
+            startY += lineHeight;
+
+            SDL_renderText($"ST :: 0x{chip8.soundTimer:X2}", startX, startY, rgbaToSDLColour(240, 60, 60, 255));
+            startY += lineHeight;
+
+            SDL_SetRenderDrawColor(SDL_renderer, 60, 60, 255, 0);
+            for (int i = 0; i < chip8.registers.Length; i++)
             {
-                for (int j = 0; j < chip8.display.GetLength(1); j++)
-                {
-                    Console.Write($"{chip8.display[i, j]:X2}");
-                }
-                Console.Write("\n");
+                SDL_renderText($"V{i:X1} :: {chip8.registers[i]:X2}", startX, startY, rgbaToSDLColour(60, 255, 60, 255));
+                startY += lineHeight;
             }
         }
 
         #endregion
-
-
     }
 }
