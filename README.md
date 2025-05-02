@@ -1,4 +1,4 @@
-# A CHIP8 interpreter written in C# using SDL2 and NAudio.
+# CHIP8 interpreter written in C# using SDL2 and NAudio.
 
 ## Table of contents
 
