@@ -1,10 +1,11 @@
-# An interpreter for the CHIP8 language written in C# with SDL2 and NAudio.
+# A CHIP8 interpreter written in C# using SDL2 and NAudio.
+
+## Table of contents
 
 1. [Basic Usage](#basic-usage)
 2. [Controls](#controls)
 3. [Examples](#examples)
-
-These links don't work haha!
+4. [Credits](#credits)
 
 ## Basic Usage
 1. Start the .exe in from the most recent release or build an .exe from the source files provided.
@@ -54,5 +55,11 @@ These links don't work haha!
 ### Flags Test ROM
 <img src="https://github.com/user-attachments/assets/99d965e1-7755-49b1-ba63-52a19cc56b25" width="640">
 
+
+## Credits
+
+Test ROMs were gathered from:
+`https://github.com/dmatlack/chip8/tree/master`
+`https://github.com/Timendus/chip8-test-suite`
 
 
