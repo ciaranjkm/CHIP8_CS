@@ -1,8 +1,8 @@
 # An interpreter for the CHIP8 language written in C# with SDL2 and NAudio.
 
-1. [Basic Usage](basic-usage)
-2. [Controls](controls)
-3. [Examples](examples)
+1. [Basic Usage](#basic-usage)
+2. [Controls](#controls)
+3. [Examples](#examples)
 
 These links don't work haha!
 
