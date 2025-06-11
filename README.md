@@ -19,7 +19,7 @@
 
   To choose `ROM1.ch8` you would type `0` into the console.
    
-5. Emulator opens in a seperate window. See below for controls.
+4. Emulator opens in a seperate window. See below for controls.
 
 ## Controls:
 1. The CHIP8 uses a hexidecimal keypad to manage user input, with the standard keypad being arranged as follows, this interpreter maps the keys accordingly.
